@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recruitment Chatbot</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #e1f5fe; /* Light blue background */
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .chat-container {
+            max-width: 850px;
+            width: 100%;
+            background-color: white; /* White background for chat container */
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            border-bottom: 1px solid #e1e1e1;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .chat-header h1 {
+            font-size: 2rem; /* Larger heading */
+            color: #2d3e50;
+            font-weight: 600;
+            margin: 0;
+            margin-left: 15px;
+        }
+
+        /* Logo Styling */
+        .logo {
+            height: 50px; /* Adjust the size of the logo */
+        }
+
+        .chat-box {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 12px 15px;
+            background-color: #fafafa; /* Light gray background for chat box */
+            border: 1px solid #e1e1e1;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Added slight shadow for depth */
+        }
+
+        .chat-box .user {
+            text-align: right;
+            background-color: #c8e4ff; /* Light blue for user */
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 20px;
+            max-width: 70%;
+            margin-left: auto;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-box .model {
+            text-align: left;
+            background-color: #e4e4e4; /* Light gray for model */
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 20px;
+            max-width: 70%;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #e1e1e1;
+            padding-top: 15px;
+        }
+
+        .input-area input {
+            width: 80%;
+            padding: 12px;
+            font-size: 1.1rem;
+            border: 1px solid #e1e1e1;
+            border-radius: 25px;
+            margin-right: 10px;
+            transition: border-color 0.3s ease;
+            background-color: #f9f9f9;
+        }
+
+        .input-area input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .input-area button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .input-area button:hover {
+            background-color: #0056b3;
+        }
+
+        .input-area button:focus {
+            outline: none;
+        }
+
+        /* Animations */
+        .chat-box .user, .chat-box .model {
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .chat-header {
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .logo {
+                height: 40px;
+                margin-bottom: 10px;
+            }
+
+            .chat-header h1 {
+                font-size: 1.5rem;
+                text-align: center;
+            }
+
+            .input-area input {
+                width: 70%;
+            }
+
+            .input-area button {
+                width: 25%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <!-- Logo Image -->
+            <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Company Logo" class="logo">
+
+            <h1>Recruitment Chatbot</h1>
+        </div>
+        <div class="chat-box" id="chat-box">
+            <!-- Chat messages will be displayed here -->
+        </div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Ask me something..." autofocus>
+            <button id="send-btn">Send</button>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#send-btn').on('click', function() {
+                var userInput = $('#user-input').val();
+                if (userInput) {
+                    appendMessage('user', userInput);
+                    $('#user-input').val(''); // Clear the input field
+                    sendMessage(userInput);
+                }
+            });
+
+            function appendMessage(role, message) {
+                var messageDiv = $('<div>').addClass(role).text(message);
+                $('#chat-box').append(messageDiv);
+                $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight); // Auto scroll to bottom
+            }
+
+            function sendMessage(userInput) {
+                $.ajax({
+                    url: '/chat', // Replace with your backend chat API endpoint
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ user_input: userInput }),
+                    success: function(data) {
+                        var botResponse = data.response;
+                        appendMessage('model', botResponse);
+                    },
+                    error: function(error) {
+                        appendMessage('model', 'Sorry, there was an error. Please try again.');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

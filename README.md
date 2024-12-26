@@ -15,4 +15,4 @@ An interactive, user-friendly recruitment chatbot that assists candidates by ans
 ## Setup Instructions  
 1. Clone this repository:  
    ```bash
-   git clone https://github.com/adinath09/chatbot_recruitment/edit/master/README.md
+   git clone https://github.com/adinath09/chatbot_recruitment
